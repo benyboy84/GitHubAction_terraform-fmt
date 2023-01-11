@@ -1,0 +1,25 @@
+name: 'Terrafrm Format (fmt)'
+description: 'This action uses the `terraform fmt` command to check that all terraform files in a terraform configuration directory are in the canonical format.'
+author: 'Benoit Blais'
+
+inputs:
+  path:
+    description: Path to the terraform configuration.
+    required: false
+    type: string
+  recursive:
+    description: 'By default, fmt scans the current directory for configuration files. If you provide a directory for the target argument, then fmt will scan that directory instead.'
+    required: false
+    default: true
+    type: boolean
+
+runs:
+  using: "composite"
+  steps:
+    - id: BashScript
+      shell: bash
+      run: bash ${{ github.action_path }}/main.sh
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_RECURSIVE: ${{ inputs.recursive }}
+        
