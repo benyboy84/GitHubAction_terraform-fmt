@@ -115,7 +115,7 @@ else
 fi
 
 # Gather the output of `terraform fmt`.
-terraform fmt
+terraform fmt -check
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 echo $OUTPUT
 echo $EXITCODE
