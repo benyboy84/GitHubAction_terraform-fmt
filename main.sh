@@ -115,7 +115,7 @@ else
 fi
 
 # Gather the output of `terraform fmt`.
-OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET} 2>&1)
+OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 echo -e "$OUTPUT"
 EXITCODE=${?}
 
@@ -149,11 +149,11 @@ fi
 # Actions: Iterate over all files and build diff-based PR comment.
 if [[ $EXITCODE -eq 3 ]]; then
     echo "Terraform Format | ERROR    | Terraform files are incorrectly formatted."
-    ALL_FILES_DIFF=""
+    OUTPUT=""
     FILES=$(terraform fmt -check -write=false -list ${RECURSIVE})
     for FILE in $FILES; do
         THIS_FILE_DIFF=$(terraform fmt -no-color -write=false -diff "$FILE")
-        ALL_FILES_DIFF="$ALL_FILES_DIFF
+        OUTPUT="$OUTPUT
 <details><summary><code>$FILE</code></summary>
 <p>
 
@@ -166,7 +166,7 @@ $THIS_FILE_DIFF
     done
 
     PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed 
-$ALL_FILES_DIFF"
+$OUTPUT"
 fi
 
 pull_request_comment
