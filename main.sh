@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Terraform Format | INFO     | Checking if Terraform files are correctly formatted."
+echo "Terraform Format | INFO     | Checking if terraform files are correctly formatted."
 
 # `pull_request_comment` function will create a comment if the action is call from a pull request.
 # If a comment already exist in the pull request, it will delete it and create a new one.
@@ -9,7 +9,7 @@ pull_request_comment () {
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
         echo "Terraform Format | WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
-        echo "Terraform Format | INFO     | $GITHUB_ACTION output"
+        echo "Terraform Format | INFO     | Output"
         echo -e "$OUTPUT"
     else
         if [[ -z GITHUB_TOKEN ]]; then
@@ -116,6 +116,7 @@ fi
 
 # Gather the output of `terraform fmt`.
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
+echo -e "$OUTPUT"
 EXITCODE=${?}
 
 # Exit Code: 0
