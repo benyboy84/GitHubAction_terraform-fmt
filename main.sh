@@ -117,8 +117,8 @@ fi
 # Gather the output of `terraform fmt`.
 terraform version
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
-echo -e "$OUTPUT"
-echo -e "$EXITCODE"
+echo $OUTPUT
+echo $EXITCODE
 EXITCODE=${?}
 
 # Exit Code: 0
