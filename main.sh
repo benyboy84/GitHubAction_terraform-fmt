@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Terraform Format | INFO     | Checking if terraform files are correctly formatted."
+echo "INFO     | Checking if terraform files are correctly formatted."
 
 # `pull_request_comment` function will create a comment if the action is call from a pull request.
 # If a comment already exist in the pull request, it will delete it and create a new one.
@@ -8,15 +8,15 @@ echo "Terraform Format | INFO     | Checking if terraform files are correctly fo
 pull_request_comment () {
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
-        echo "Terraform Format | WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
-        echo "Terraform Format | INFO     | Output"
+        echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
+        echo "INFO     | Output"
         echo -e "$OUTPUT"
     else
         if [[ -z GITHUB_TOKEN ]]; then
-            echo "Terraform Format | WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
+            echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
         else
             # Look for an existing PR comment and delete
-            echo "Terraform Format | INFO     | Looking for an existing PR comment."
+            echo "INFO     | Looking for an existing PR comment."
             ACCEPT_HEADER="Accept: application/vnd.github.v3+json"
             AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
             CONTENT_HEADER="Content-Type: application/json"
@@ -29,26 +29,26 @@ pull_request_comment () {
             PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### '"${GITHUB_WORKFLOW}"' - Terraform fmt Failed")) | .id')
             
             if [ "$PR_COMMENT_ID" ]; then
-                echo "Terraform Format | INFO     | Found existing PR comment: $PR_COMMENT_ID. Deleting."
+                echo "INFO     | Found existing PR comment: $PR_COMMENT_ID. Deleting."
                 PR_COMMENT_URL="$PR_COMMENT_URI/$PR_COMMENT_ID"
                 {
                     curl -sS -X DELETE -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENT_URL" > /dev/null
                 } ||
                 {
-                    echo "Terraform Format | ERROR    | Unable to delete existing comment in PR."
+                    echo "ERROR    | Unable to delete existing comment in PR."
                 }
             else
-                echo "Terraform Format | INFO     | No existing PR comment found."
+                echo "INFO     | No existing PR comment found."
             fi
             if [[ $EXITCODE -ne 0 ]]; then
                 # Add comment to PR.
                 PR_PAYLOAD=$(echo '{}' | jq --arg body "$PR_COMMENT" '.body = $body')
-                echo "Terraform Format | INFO     | Adding comment to PR."
+                echo "INFO     | Adding comment to PR."
                 {
                     curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$CONTENT_HEADER" -d "$PR_PAYLOAD" -L "$PR_COMMENTS_URL" > /dev/null
                 } ||
                 {
-                    echo "Terraform Format | ERROR    | Unable to add comment to PR."
+                    echo "ERROR    | Unable to add comment to PR."
                 }
             fi
         fi
@@ -63,7 +63,7 @@ if [[ -n "$INPUT_PATH" ]]; then
     if [[ ! -d "$INPUT_PATH" ]]; then
         OUTPUT="Path does not exist: \"$INPUT_PATH\"."
         EXITCODE=1
-        echo "Terraform Format | ERROR    | $OUTPUT"
+        echo "ERROR    | $OUTPUT"
         PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
 <details><summary>Show Output</summary>
 <p>
@@ -82,7 +82,7 @@ RECURSIVE=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
     OUTPUT="Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid commands are \"true\", \"false\"."
     EXITCODE=1
-    echo "Terraform Format | ERROR    | $OUTPUT"
+    echo "ERROR    | $OUTPUT"
     PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
 <details><summary>Show Output</summary>
 <p>
@@ -101,7 +101,7 @@ VERSION=$(terraform version -json | jq -r '.terraform_version' 2>/dev/null || te
 if [[ -z $VERSION  ]]; then
     OUTPUT="Terraform not detected."
     EXITCODE=1
-    echo "Terraform Format | ERROR    | $OUTPUT"
+    echo "ERROR    | $OUTPUT"
     PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
 <details><summary>Show Output</summary>
 <p>
@@ -111,28 +111,19 @@ $OUTPUT
         pull_request_comment
         exit $EXITCODE
 else
-    echo "Terraform Format | INFO     | Using terraform version $VERSION."
+    echo "INFO     | Using terraform version $VERSION."
 fi
 
 # Gather the output of `terraform fmt`.
-echo -e "terraform fmt -check"
-terraform fmt -check
-echo $?
-echo -e "terraform fmt -list=false -check"
-terraform fmt -list=false -check
-echo $?
-echo -e "terraform fmt -list=false -checks"
-terraform fmt -list=false -checks
-echo $?
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
+EXITCODE=${?}
 echo $OUTPUT
 echo $EXITCODE
-EXITCODE=${?}
 
 # Exit Code: 0
 # Meaning: All files formatted correctly.
 if [[ $EXITCODE -eq 0 ]]; then
-    echo "Terraform Format | INFO     | Terraform files are correctly formatted"
+    echo "INFO     | Terraform files are correctly formatted"
 fi
 
 # Exit Code: 1, 2
@@ -141,9 +132,9 @@ fi
 if [[ $EXITCODE -eq 1 || $EXITCODE -eq 2 ]]; then
 
     if [[ $EXITCODE -eq 2 ]]; then
-        echo "Terraform Format | ERROR    | Failed to parse Terraform files."
+        echo "ERROR    | Failed to parse Terraform files."
     else
-        echo "Terraform Format | ERROR    | Malformed Terraform CLI command."
+        echo "ERROR    | Malformed Terraform CLI command."
     fi
 
     PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
@@ -158,7 +149,7 @@ fi
 # Meaning: One or more files are incorrectly formatted.
 # Actions: Iterate over all files and build diff-based PR comment.
 if [[ $EXITCODE -eq 3 ]]; then
-    echo "Terraform Format | ERROR    | Terraform files are incorrectly formatted."
+    echo "ERROR    | Terraform files are incorrectly formatted."
     OUTPUT=""
     FILES=$(terraform fmt -check -write=false -list ${RECURSIVE})
     for FILE in $FILES; do
