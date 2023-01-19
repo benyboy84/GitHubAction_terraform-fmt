@@ -72,7 +72,7 @@ Provided value \"$INPUT_TARGET\" for \`target\` input does not exist.
 You need to provide an existing file or directory.
 </p>
 </details>"
-        PULL_REQUEST_COMMENT $PR_COMMENT
+        PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
     fi
 fi
@@ -89,7 +89,7 @@ Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\".
 Valid values are \"true\" or \"false\".
 </p>
 </details>"
-        PULL_REQUEST_COMMENT $PR_COMMENT
+        PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
 fi
 if [[ "$INPUT_RECURSIVE" == true ]]; then
@@ -115,7 +115,7 @@ with:
 
 </p>
 </details>"
-        PULL_REQUEST_COMMENT $PR_COMMENT
+        PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
 else
     echo "INFO     | Using terraform version $VERSION."
@@ -180,6 +180,6 @@ $THIS_FILE_DIFF"
 $ALL_FILES_DIFF"
 fi
 
-PULL_REQUEST_COMMENT $PR_COMMENT
+PULL_REQUEST_COMMENT "$PR_COMMENT"
 
 exit $EXITCODE
