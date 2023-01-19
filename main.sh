@@ -9,8 +9,6 @@ PULL_REQUEST_COMMENT () {
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
         echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
-        echo "INFO     | Output"
-        echo -e "$OUTPUT"
     else
         if [[ -z GITHUB_TOKEN ]]; then
             echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
@@ -128,21 +126,21 @@ EXITCODE=${?}
 # Exit Code: 0
 # Meaning: All files formatted correctly.
 if [[ $EXITCODE -eq 0 ]]; then
-    echo "INFO     | Terraform files are correctly formatted"
+    echo "INFO     | Terraform file(s) are correctly formatted"
 fi
 
 # Exit Code: 1, 2
 # Meaning: 1 = Malformed Terraform CLI command. 2 = Terraform parse error.
 # Actions: Build PR comment.
 if [[ $EXITCODE -eq 1 || $EXITCODE -eq 2 ]]; then
-
     if [[ $EXITCODE -eq 2 ]]; then
-        echo "ERROR    | Failed to parse Terraform files."
+        echo "ERROR    | Failed to parse terraform file(s)."
     else
-        echo "ERROR    | Malformed Terraform CLI command."
+        echo "ERROR    | Malformed terraform CLI command."
     fi
-
-    PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
+    echo -e "ERROR    | Terraform fmt output:"
+    echo -e $OUTPUT
+    PR_COMMENT="### Terraform Format Failed
 <details><summary>Show Output</summary>
 <p>
 $OUTPUT
@@ -154,12 +152,14 @@ fi
 # Meaning: One or more files are incorrectly formatted.
 # Actions: Iterate over all files and build diff-based PR comment.
 if [[ $EXITCODE -eq 3 ]]; then
-    echo "ERROR    | Terraform files are incorrectly formatted."
-    OUTPUT=""
+    echo "ERROR    | Terraform file(s) are incorrectly formatted."
+    ALL_FILES_DIFF=""
     FILES=$(terraform fmt -check -write=false -list ${RECURSIVE})
+    echo -e "ERROR    | Terraform fmt output:"
+    echo -e "$FILES" 
     for FILE in $FILES; do
         THIS_FILE_DIFF=$(terraform fmt -no-color -write=false -diff "$FILE")
-        OUTPUT="$OUTPUT
+        ALL_FILES_DIFF="$ALL_FILES_DIFF
 <details><summary><code>$FILE</code></summary>
 <p>
 
