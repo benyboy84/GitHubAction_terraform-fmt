@@ -115,7 +115,15 @@ else
 fi
 
 # Gather the output of `terraform fmt`.
+echo -e "terraform fmt -check"
 terraform fmt -check
+echo $?
+echo -e "terraform fmt -list=false -check"
+terraform fmt -list=false -check
+echo $?
+echo -e "terraform fmt -list=false -checks"
+terraform fmt -list=false -checks
+echo $?
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 echo $OUTPUT
 echo $EXITCODE
