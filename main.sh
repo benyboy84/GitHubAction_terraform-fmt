@@ -13,42 +13,39 @@ PULL_REQUEST_COMMENT () {
         if [[ -z GITHUB_TOKEN ]]; then
             echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
         else
-        echo "Parameter"
-        echo -e $1
-            # Look for an existing PR comment and delete
-            echo "INFO     | Looking for an existing PR comment."
-            ACCEPT_HEADER="Accept: application/vnd.github.v3+json"
-            AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
-            CONTENT_HEADER="Content-Type: application/json"
+            # Look for an existing pull request comment and delete
+            echo "INFO     | Looking for an existing pull request comment."
+            local ACCEPT_HEADER="Accept: application/vnd.github.v3+json"
+            local AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+            local CONTENT_HEADER="Content-Type: application/json"
             if [[ "$GITHUB_EVENT_NAME" == "issue_comment" ]]; then
-                PR_COMMENTS_URL=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
+                local PR_COMMENTS_URL=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
             else
-                PR_COMMENTS_URL=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
+                local PR_COMMENTS_URL=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
             fi
-            PR_COMMENT_URI=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
-            PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### Terraform Format Failed")) | .id')
-            
+            local PR_COMMENT_URI=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
+            local PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
             if [ "$PR_COMMENT_ID" ]; then
-                echo "INFO     | Found existing PR comment: $PR_COMMENT_ID. Deleting."
-                PR_COMMENT_URL="$PR_COMMENT_URI/$PR_COMMENT_ID"
+                echo "INFO     | Found existing pull request comment: $PR_COMMENT_ID. Deleting."
+                local PR_COMMENT_URL="$PR_COMMENT_URI/$PR_COMMENT_ID"
                 {
                     curl -sS -X DELETE -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENT_URL" > /dev/null
                 } ||
                 {
-                    echo "ERROR    | Unable to delete existing comment in PR."
+                    echo "ERROR    | Unable to delete existing comment in pull request."
                 }
             else
-                echo "INFO     | No existing PR comment found."
+                echo "INFO     | No existing pull request comment found."
             fi
             if [[ $EXITCODE -ne 0 ]]; then
-                # Add comment to PR.
-                PR_PAYLOAD=$(echo '{}' | jq --arg body "$1" '.body = $body')
-                echo "INFO     | Adding comment to PR."
+                # Add comment to pull request.
+                local PR_PAYLOAD=$(echo '{}' | jq --arg body "$1" '.body = $body')
+                echo "INFO     | Adding comment to pull request."
                 {
                     curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$CONTENT_HEADER" -d "$PR_PAYLOAD" -L "$PR_COMMENTS_URL" > /dev/null
                 } ||
                 {
-                    echo "ERROR    | Unable to add comment to PR."
+                    echo "ERROR    | Unable to add comment to pull request."
                 }
             fi
         fi
@@ -133,7 +130,7 @@ fi
 
 # Exit Code: 1, 2
 # Meaning: 1 = Malformed Terraform CLI command. 2 = Terraform parse error.
-# Actions: Build PR comment.
+# Actions: Build pull request comment.
 if [[ $EXITCODE -eq 1 || $EXITCODE -eq 2 ]]; then
     if [[ $EXITCODE -eq 2 ]]; then
         echo "ERROR    | Failed to parse terraform file(s)."
@@ -152,7 +149,7 @@ fi
 
 # Exit Code: 3
 # Meaning: One or more files are incorrectly formatted.
-# Actions: Iterate over all files and build diff-based PR comment.
+# Actions: Iterate over all files and build diff-based pull request comment.
 if [[ $EXITCODE -eq 3 ]]; then
     echo "ERROR    | Terraform file(s) are incorrectly formatted."
     ALL_FILES_DIFF=""
