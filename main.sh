@@ -175,7 +175,7 @@ $THIS_FILE_DIFF"
     echo -e "ERROR    | Terraform fmt output:"
     echo -e "$OUTPUT"
     PR_COMMENT="### Terraform Format Failed 
-ALL_FILES_DIFF"
+$ALL_FILES_DIFF"
 fi
 
 PULL_REQUEST_COMMENT $PR_COMMENT
