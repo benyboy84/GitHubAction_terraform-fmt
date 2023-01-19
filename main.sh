@@ -40,7 +40,7 @@ PULL_REQUEST_COMMENT () {
             fi
             if [[ $EXITCODE -ne 0 ]]; then
                 # Add comment to PR.
-                PR_PAYLOAD=$(echo '{}' | jq --arg body "$PR_COMMENT" '.body = $body')
+                PR_PAYLOAD=$(echo '{}' | jq --arg body "$1" '.body = $body')
                 echo "INFO     | Adding comment to PR."
                 {
                     curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$CONTENT_HEADER" -d "$PR_PAYLOAD" -L "$PR_COMMENTS_URL" > /dev/null
@@ -168,13 +168,14 @@ $THIS_FILE_DIFF
 
 </p>
 </details>"
-    OUTPUT="$OUTPUT
+        OUTPUT="$OUTPUT
+
 $THIS_FILE_DIFF"
     done
     echo -e "ERROR    | Terraform fmt output:"
     echo -e "$OUTPUT"
     PR_COMMENT="### Terraform Format Failed 
-$OUTPUT"
+ALL_FILES_DIFF"
 fi
 
 PULL_REQUEST_COMMENT $PR_COMMENT
