@@ -22,9 +22,9 @@ A comment will be added to the pull request in case of error. If it is related t
 
 ## Inputs
 
-* `path`
+* `target`
 
-  By default, fmt scans the current directory for configuration files. If you provide a directory for the `path` argument, then fmt will scan that directory instead. 
+  By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the `target` argument, then fmt will scan that file or that directory instead. 
  
   - Type: string
   - Optional
@@ -32,7 +32,7 @@ A comment will be added to the pull request in case of error. If it is related t
 
   ```yaml
   with:
-    path: ./modules
+    target: ./modules
   ```
 
 * `recursive`
@@ -98,7 +98,7 @@ jobs:
         id: fmt
         uses: benyboy84/GitHubAction_terraform-fmt@v1
         with:
-          path: ./modules
+          target: ./modules
           recursive: false
 ```
 

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "INFO     | Checking if terraform files are correctly formatted."
+echo "INFO     | Checking if terraform file(s) are correctly formatted."
 
-# `pull_request_comment` function will create a comment if the action is call from a pull request.
+# `PULL_REQUEST_COMMENT` function will create a comment if the action is call from a pull request.
 # If a comment already exist in the pull request, it will delete it and create a new one.
 # If there EXITCODE variable is set to 0, meaning that there is no error, if a comment exist, it will be deleted.
-pull_request_comment () {
+PULL_REQUEST_COMMENT () {
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
         echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
@@ -57,39 +57,39 @@ pull_request_comment () {
 
 # Optional inputs
 
-# Validate input path.
+# Validate input target.
 TARGET=""
-if [[ -n "$INPUT_PATH" ]]; then
-    if [[ ! -d "$INPUT_PATH" ]]; then
-        OUTPUT="Path does not exist: \"$INPUT_PATH\"."
+if [[ -n "$INPUT_TARGET" ]]; then
+    if [[ -d "$INPUT_TARGET" || -f "$INPUT_TARGET" ]]; then
+        TARGET=$INPUT_TARGET
+    else
         EXITCODE=1
-        echo "ERROR    | $OUTPUT"
-        PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
+        echo "ERROR    | Target does not exist: \"$INPUT_TARGET\"."
+        PR_COMMENT="### Terraform Format Failed
 <details><summary>Show Output</summary>
 <p>
-$OUTPUT
+Provided value \"$INPUT_TARGET\" for \`target\` input does not exist. 
+You need to provide an existing file or directory.
 </p>
 </details>"
-        pull_request_comment
+        PULL_REQUEST_COMMENT $PR_COMMENT
         exit $EXITCODE
-    else
-        TARGET=$INPUT_PATH
     fi
 fi
 
 # Validate input recursive.
 RECURSIVE=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
-    OUTPUT="Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid commands are \"true\", \"false\"."
     EXITCODE=1
-    echo "ERROR    | $OUTPUT"
-    PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
+    echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid values are \"true\" or \"false\"."
+    PR_COMMENT="### Terraform Format Failed
 <details><summary>Show Output</summary>
 <p>
-$OUTPUT
+Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". 
+Valid values are \"true\" or \"false\".
 </p>
 </details>"
-        pull_request_comment
+        PULL_REQUEST_COMMENT $PR_COMMENT
         exit $EXITCODE
 fi
 if [[ "$INPUT_RECURSIVE" == true ]]; then
@@ -99,16 +99,23 @@ fi
 # Detect terraform version
 VERSION=$(terraform version -json | jq -r '.terraform_version' 2>/dev/null || terraform version | grep 'Terraform v' | sed 's/Terraform v//')
 if [[ -z $VERSION  ]]; then
-    OUTPUT="Terraform not detected."
     EXITCODE=1
-    echo "ERROR    | $OUTPUT"
-    PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed
+    echo "ERROR    | Terraform not detected."
+    PR_COMMENT="### Terraform Format Failed
 <details><summary>Show Output</summary>
 <p>
-$OUTPUT
+This GitHub Actions does not install `terraform`, so you have to install them in advanced.
+
+\`\`\`yaml
+- name: Setup Terraform
+uses: hashicorp/setup-terraform@v2
+with:
+    terraform_wrapper: false
+\`\`\`
+
 </p>
 </details>"
-        pull_request_comment
+        PULL_REQUEST_COMMENT $PR_COMMENT
         exit $EXITCODE
 else
     echo "INFO     | Using terraform version $VERSION."
@@ -117,8 +124,6 @@ fi
 # Gather the output of `terraform fmt`.
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 EXITCODE=${?}
-echo $OUTPUT
-echo $EXITCODE
 
 # Exit Code: 0
 # Meaning: All files formatted correctly.
@@ -170,6 +175,6 @@ $THIS_FILE_DIFF
 $OUTPUT"
 fi
 
-pull_request_comment
+PULL_REQUEST_COMMENT
 
 exit $EXITCODE
