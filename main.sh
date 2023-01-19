@@ -154,9 +154,8 @@ fi
 if [[ $EXITCODE -eq 3 ]]; then
     echo "ERROR    | Terraform file(s) are incorrectly formatted."
     ALL_FILES_DIFF=""
+    OUTPUT=""
     FILES=$(terraform fmt -check -write=false -list ${RECURSIVE})
-    echo -e "ERROR    | Terraform fmt output:"
-    echo -e "$FILES" 
     for FILE in $FILES; do
         THIS_FILE_DIFF=$(terraform fmt -no-color -write=false -diff "$FILE")
         ALL_FILES_DIFF="$ALL_FILES_DIFF
@@ -169,12 +168,15 @@ $THIS_FILE_DIFF
 
 </p>
 </details>"
+    OUTPUT="$OUTPUT
+$THIS_FILE_DIFF"
     done
-
-    PR_COMMENT="### ${GITHUB_WORKFLOW} - Terraform fmt Failed 
+    echo -e "ERROR    | Terraform fmt output:"
+    echo -e $OUTPUT
+    PR_COMMENT="### Terraform Format Failed 
 $OUTPUT"
 fi
 
-PULL_REQUEST_COMMENT
+PULL_REQUEST_COMMENT $PR_COMMENT
 
 exit $EXITCODE
