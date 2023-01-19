@@ -13,6 +13,8 @@ PULL_REQUEST_COMMENT () {
         if [[ -z GITHUB_TOKEN ]]; then
             echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
         else
+        echo "Parameter"
+        echo -e $1
             # Look for an existing PR comment and delete
             echo "INFO     | Looking for an existing PR comment."
             ACCEPT_HEADER="Accept: application/vnd.github.v3+json"
@@ -24,7 +26,7 @@ PULL_REQUEST_COMMENT () {
                 PR_COMMENTS_URL=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
             fi
             PR_COMMENT_URI=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
-            PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### '"${GITHUB_WORKFLOW}"' - Terraform fmt Failed")) | .id')
+            PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### Terraform Format Failed")) | .id')
             
             if [ "$PR_COMMENT_ID" ]; then
                 echo "INFO     | Found existing PR comment: $PR_COMMENT_ID. Deleting."
