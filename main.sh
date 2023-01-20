@@ -5,6 +5,10 @@ echo "INFO     | Checking if terraform file(s) are correctly formatted."
 # `PULL_REQUEST_COMMENT` function will create a comment if the action is call from a pull request.
 # If a comment already exist in the pull request, it will delete it and create a new one.
 # If there EXITCODE variable is set to 0, meaning that there is no error, if a comment exist, it will be deleted.
+# Parameter:
+# 1. Pull request comment
+#    Follow this guide to build the string for the body of the pull request comment:
+#    https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheets
 PULL_REQUEST_COMMENT () {
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
