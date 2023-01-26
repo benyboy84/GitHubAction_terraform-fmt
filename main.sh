@@ -142,6 +142,10 @@ fi
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 EXITCODE=${?}
 
+# Add output of `terraform fmt` command.
+echo "INFO     | Terraform fmt output"
+echo -e "$OUTPUT"
+
 # Exit Code: 0
 # Meaning: All files formatted correctly.
 if [[ $EXITCODE -eq 0 ]]; then
