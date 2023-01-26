@@ -42,7 +42,7 @@ PULL_REQUEST_COMMENT () {
             local PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
             if [ "$PR_COMMENT_ID" ]; then
                 
-                if IS_ARRAY($PR_COMMENT_ID); then
+                if [[ IS_ARRAY($PR_COMMENT_ID) -eq 0 ]]; then
                     echo "is an array"
                 fi
 
