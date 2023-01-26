@@ -41,19 +41,19 @@ PULL_REQUEST_COMMENT () {
             local PR_COMMENT_URI=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
             local PR_COMMENT_ID=$(curl -sS -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENTS_URL" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
             if [ "$PR_COMMENT_ID" ]; then
-                
-                if [[ $(IS_ARRAY $PR_COMMENT_ID)  -eq 0 ]]; then
-                    echo "is an array"
+                if [[ $(IS_ARRAY $PR_COMMENT_ID)  -ne 0 ]]; then
+                    echo "INFO     | Found existing pull request comment: $PR_COMMENT_ID. Deleting."
+                    local PR_COMMENT_URL="$PR_COMMENT_URI/$PR_COMMENT_ID"
+                    {
+                        curl -sS -X DELETE -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENT_URL" > /dev/null
+                    } ||
+                    {
+                        echo "ERROR    | Unable to delete existing comment in pull request."
+                    }
+                else
+                    echo "WARNING  | Pull request contain many comments with \"### Terraform Format\" in the body."
+                    echo "WARNING  | Existing pull request comments won't be delete."
                 fi
-
-                echo "INFO     | Found existing pull request comment: $PR_COMMENT_ID. Deleting."
-                local PR_COMMENT_URL="$PR_COMMENT_URI/$PR_COMMENT_ID"
-                {
-                    curl -sS -X DELETE -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -L "$PR_COMMENT_URL" > /dev/null
-                } ||
-                {
-                    echo "ERROR    | Unable to delete existing comment in pull request."
-                }
             else
                 echo "INFO     | No existing pull request comment found."
             fi
