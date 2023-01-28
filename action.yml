@@ -3,12 +3,12 @@ description: 'This action uses the `terraform fmt` command to check that all ter
 author: 'Benoit Blais'
 
 inputs:
-  path:
-    description: Path to the terraform configuration.
+  target:
+    description: Target to the terraform configuration.
     required: false
     type: string
   recursive:
-    description: 'By default, fmt scans the current directory for configuration files. If you provide a directory for the target argument, then fmt will scan that directory instead.'
+    description: 'By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the target argument, then fmt will scan that file or that directory instead.'
     required: false
     default: true
     type: boolean
@@ -20,6 +20,6 @@ runs:
       shell: bash
       run: bash ${{ github.action_path }}/main.sh
       env:
-        INPUT_PATH: ${{ inputs.path }}
+        INPUT_TARGET: ${{ inputs.target }}
         INPUT_RECURSIVE: ${{ inputs.recursive }}
         

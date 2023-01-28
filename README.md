@@ -7,11 +7,11 @@ This can be used to check that files are properly formatted before merging.
 
 If any files are not correctly formatted, the GitHub Action job failed.
 
-A comment will be added to the pull request with the output of the `terraform fmt` in case of error.
+A comment will be added to the pull request in case of error. If it is related to the `terraform fmt` command, the comment will contain the output of the command.
 
 ## Requirements
 
-* This GitHub Actions does not install `terraform`, so you have to install them in advance.
+* This GitHub Actions does not install `terraform`, so you have to install them in advanced.
 
   ```yaml
   - name: Setup Terraform
@@ -22,9 +22,9 @@ A comment will be added to the pull request with the output of the `terraform fm
 
 ## Inputs
 
-* `path`
+* `target`
 
-  By default, fmt scans the current directory for configuration files. If you provide a directory for the `Path` argument, then fmt will scan that directory instead. 
+  By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the `target` argument, then fmt will scan that file or that directory instead. 
  
   - Type: string
   - Optional
@@ -32,7 +32,7 @@ A comment will be added to the pull request with the output of the `terraform fm
 
   ```yaml
   with:
-    path: ./modules
+    target: ./modules
   ```
 
 * `recursive`
@@ -45,7 +45,7 @@ A comment will be added to the pull request with the output of the `terraform fm
 
   ```yaml
   with:
-    recursive: [true, false]
+    recursive: false
   ```
 
 ## Environment Variables
@@ -75,6 +75,10 @@ name: Check terraform file formatting
 on:
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   TerraformFormat:
     runs-on: ubuntu-latest
@@ -82,6 +86,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -94,7 +99,7 @@ jobs:
         id: fmt
         uses: benyboy84/GitHubAction_terraform-fmt@v1
         with:
-          path: ./modules
+          target: ./modules
           recursive: false
 ```
 
