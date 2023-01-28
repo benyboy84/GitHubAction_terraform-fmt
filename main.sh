@@ -142,10 +142,6 @@ fi
 OUTPUT=$(terraform fmt -list=false -check ${RECURSIVE} ${TARGET})
 EXITCODE=${?}
 
-# Add output of `terraform fmt` command.
-echo "INFO     | Terraform fmt output"
-echo -e "$OUTPUT"
-
 # Exit Code: 0
 # Meaning: All files formatted correctly.
 if [[ $EXITCODE -eq 0 ]]; then
@@ -161,6 +157,7 @@ if [[ $EXITCODE -eq 1 || $EXITCODE -eq 2 ]]; then
     else
         echo "ERROR    | Malformed terraform CLI command."
     fi
+    # Add output of `terraform fmt` command.
     echo -e "ERROR    | Terraform fmt output:"
     echo -e $OUTPUT
     PR_COMMENT="### Terraform Format Failed
@@ -176,6 +173,9 @@ fi
 # Actions: Iterate over all files and build diff-based pull request comment.
 if [[ $EXITCODE -eq 3 ]]; then
     echo "ERROR    | Terraform file(s) are incorrectly formatted."
+    # Add output of `terraform fmt` command.
+    echo -e "ERROR    | Terraform fmt output:"
+    echo -e $OUTPUT
     ALL_FILES_DIFF=""
     OUTPUT=""
     FILES=$(terraform fmt -check -write=false -list ${RECURSIVE})
