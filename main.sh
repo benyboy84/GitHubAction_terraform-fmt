@@ -4,7 +4,6 @@ echo "INFO     | Checking if terraform file(s) are correctly formatted."
 
 # check if variable is array, returns 0 on success, 1 otherwise
 # @param mixed 
-
 IS_ARRAY()
 {   # Detect if arg is an array, returns 0 on sucess, 1 otherwise
     [ -z "$1" ] && return 1

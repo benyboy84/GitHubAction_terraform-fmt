@@ -86,6 +86,7 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
