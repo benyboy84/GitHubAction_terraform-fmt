@@ -59,7 +59,7 @@ PULL_REQUEST_COMMENT () {
             if [[ $EXITCODE -ne 0 ]]; then
                 # Add comment to pull request.
                 BODY="### Terraform Format Failed
-                $1"
+$1"
                 local PR_PAYLOAD=$(echo '{}' | jq --arg body "$BODY" '.body = $body')
                 echo "INFO     | Adding comment to pull request."
                 {
