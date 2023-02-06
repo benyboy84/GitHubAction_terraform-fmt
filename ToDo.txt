@@ -1,0 +1,14 @@
+Change PR Comment to remove 
+<details><summary>Show Output</summary>
+<p>
+and add it into the function.
+
+Add input for comment
+
+Add output for Exit and Command output
+
+Edit function to Edit instead of delete and create
+
+Add option to edit last message with success.
+
+Change APIv3 to GraphQL.
