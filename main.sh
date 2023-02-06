@@ -3,7 +3,7 @@
 echo "INFO     | Checking if terraform file(s) are correctly formatted."
 
 # check if variable is array, returns 0 on success, 1 otherwise
-# @param mixed 
+# @param: mixed 
 IS_ARRAY()
 {   # Detect if arg is an array, returns 0 on sucess, 1 otherwise
     [ -z "$1" ] && return 1
@@ -58,7 +58,9 @@ PULL_REQUEST_COMMENT () {
             fi
             if [[ $EXITCODE -ne 0 ]]; then
                 # Add comment to pull request.
-                local PR_PAYLOAD=$(echo '{}' | jq --arg body "$1" '.body = $body')
+                BODY="### Terraform Format Failed
+$1"
+                local PR_PAYLOAD=$(echo '{}' | jq --arg body "$BODY" '.body = $body')
                 echo "INFO     | Adding comment to pull request."
                 {
                     curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$CONTENT_HEADER" -d "$PR_PAYLOAD" -L "$PR_COMMENTS_URL" > /dev/null
@@ -81,13 +83,8 @@ if [[ -n "$INPUT_TARGET" ]]; then
     else
         EXITCODE=1
         echo "ERROR    | Target does not exist: \"$INPUT_TARGET\"."
-        PR_COMMENT="### Terraform Format Failed
-<details><summary>Show Output</summary>
-<p>
-Provided value \"$INPUT_TARGET\" for \`target\` input does not exist. 
-You need to provide an existing file or directory.
-</p>
-</details>"
+        PR_COMMENT="Provided value \"$INPUT_TARGET\" for \`target\` input does not exist. 
+You need to provide an existing file or directory."
         PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
     fi
@@ -98,13 +95,8 @@ RECURSIVE=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
     EXITCODE=1
     echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid values are \"true\" or \"false\"."
-    PR_COMMENT="### Terraform Format Failed
-<details><summary>Show Output</summary>
-<p>
-Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". 
-Valid values are \"true\" or \"false\".
-</p>
-</details>"
+    PR_COMMENT="Unsupported command \"$INPUT_RECURSIVE\" for input \`recursive\` input. 
+Valid values are \"true\" or \"false\"."
         PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
 fi
@@ -117,10 +109,9 @@ VERSION=$(terraform version -json | jq -r '.terraform_version' 2>/dev/null || te
 if [[ -z $VERSION  ]]; then
     EXITCODE=1
     echo "ERROR    | Terraform not detected."
-    PR_COMMENT="### Terraform Format Failed
-<details><summary>Show Output</summary>
+    PR_COMMENT="<details><summary>Show Output</summary>
 <p>
-This GitHub Actions does not install `terraform`, so you have to install them in advanced.
+This GitHub Actions does not install \`terraform\`, so you have to install them in advanced.
 
 \`\`\`yaml
 - name: Setup Terraform
@@ -159,8 +150,7 @@ if [[ $EXITCODE -eq 1 || $EXITCODE -eq 2 ]]; then
     # Add output of `terraform fmt` command.
     echo -e "ERROR    | Terraform fmt output:"
     echo -e $OUTPUT
-    PR_COMMENT="### Terraform Format Failed
-<details><summary>Show Output</summary>
+    PR_COMMENT="<details><summary>Show Output</summary>
 <p>
 $OUTPUT
 </p>
@@ -196,8 +186,7 @@ $THIS_FILE_DIFF"
     done
     echo -e "ERROR    | Terraform fmt output:"
     echo -e "$OUTPUT"
-    PR_COMMENT="### Terraform Format Failed 
-$ALL_FILES_DIFF"
+    PR_COMMENT="$ALL_FILES_DIFF"
 fi
 
 PULL_REQUEST_COMMENT "$PR_COMMENT"
