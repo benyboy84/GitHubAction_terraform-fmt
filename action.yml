@@ -1,23 +1,18 @@
-name: 'Terraform Format (fmt)'
+name: 'Terrafrm Format (fmt)'
 description: 'This action uses the `terraform fmt` command to check that all terraform files in a terraform configuration directory are in the canonical format.'
 author: 'Benoit Blais'
 
 inputs:
   target:
-    description: 'Target to the terraform configuration. Defaults to the root of the GitHub repository.'
+    description: Target to the terraform configuration.
     required: false
     type: string
   recursive:
-    description: 'Also process files in subdirectories. By default, only the given directory (or current directory) is processed. Defaults to true.'
+    description: 'By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the target argument, then fmt will scan that file or that directory instead.'
     required: false
     default: true
     type: boolean
-  comment:
-    description: 'Whether or not to comment on GitHub pull requests. Defaults to true.'
-    required: false
-    default: true
-    type: boolean
-    
+
 runs:
   using: "composite"
   steps:
@@ -27,5 +22,4 @@ runs:
       env:
         INPUT_TARGET: ${{ inputs.target }}
         INPUT_RECURSIVE: ${{ inputs.recursive }}
-        INPUT_COMMENT: ${{ inputs.comment }}
         
