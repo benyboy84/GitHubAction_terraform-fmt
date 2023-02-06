@@ -60,7 +60,7 @@ PULL_REQUEST_COMMENT () {
                 # Add comment to pull request.
                 BODY="### Terraform Format Failed
                 $1"
-                local PR_PAYLOAD=$(echo '{}' | jq --arg body "$1" '.body = $body')
+                local PR_PAYLOAD=$(echo '{}' | jq --arg body "$BODY" '.body = $body')
                 echo "INFO     | Adding comment to pull request."
                 {
                     curl -sS -X POST -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" -H "$CONTENT_HEADER" -d "$PR_PAYLOAD" -L "$PR_COMMENTS_URL" > /dev/null
