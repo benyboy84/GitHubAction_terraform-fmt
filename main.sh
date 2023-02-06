@@ -95,7 +95,7 @@ RECURSIVE=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
     EXITCODE=1
     echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid values are \"true\" or \"false\"."
-    PR_COMMENT="Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". 
+    PR_COMMENT="Unsupported command \"$INPUT_RECURSIVE\" for input \`recursive\` input. 
 Valid values are \"true\" or \"false\"."
         PULL_REQUEST_COMMENT "$PR_COMMENT"
         exit $EXITCODE
@@ -111,7 +111,7 @@ if [[ -z $VERSION  ]]; then
     echo "ERROR    | Terraform not detected."
     PR_COMMENT="<details><summary>Show Output</summary>
 <p>
-This GitHub Actions does not install `terraform`, so you have to install them in advanced.
+This GitHub Actions does not install \`terraform\`, so you have to install them in advanced.
 
 \`\`\`yaml
 - name: Setup Terraform
