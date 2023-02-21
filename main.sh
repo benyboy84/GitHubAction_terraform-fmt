@@ -92,6 +92,8 @@ fi
 
 # Validate input recursive.
 recursive=""
+echo "INPUT_RECURSIVE: ${INPUT_RECURSIVE}"
+echo "RECURSIVE: ${RECURSIVE}"
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
     exit_code=1
     echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid values are \"true\" or \"false\"."
