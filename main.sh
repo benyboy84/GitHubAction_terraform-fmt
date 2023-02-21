@@ -163,8 +163,8 @@ fi
 if [[ $exit_code -eq 3 ]]; then
     echo "ERROR    | Terraform file(s) are incorrectly formatted."
     # Add output of `terraform fmt` command.
-    echo -e "ERROR    | Terraform fmt output:"
-    echo -e $output
+#    echo -e "ERROR    | Terraform fmt output:"
+#    echo -e $output
     all_files_diff=""
     output=""
     files=$(terraform fmt -check -write=false -list ${recursive})
