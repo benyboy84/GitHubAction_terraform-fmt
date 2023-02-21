@@ -20,6 +20,6 @@ runs:
       shell: bash
       run: bash ${{ github.action_path }}/main.sh
       env:
-        INPUT_TARGET: ${{ inputs.target }}
-        INPUT_RECURSIVE: ${{ inputs.recursive }}
+        TARGET: ${{ inputs.target }}
+        RECURSIVE: ${{ inputs.recursive }}
         
