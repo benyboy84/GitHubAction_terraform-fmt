@@ -162,9 +162,6 @@ fi
 # Actions: Iterate over all files and build diff-based pull request comment.
 if [[ $exit_code -eq 3 ]]; then
     echo "ERROR    | Terraform file(s) are incorrectly formatted."
-    # Add output of `terraform fmt` command.
-#    echo -e "ERROR    | Terraform fmt output:"
-#    echo -e $output
     all_files_diff=""
     output=""
     files=$(terraform fmt -check -write=false -list ${recursive})
@@ -184,6 +181,7 @@ $this_file_diff
 
 $this_file_diff"
     done
+    # Add output of `terraform fmt` command.
     echo -e "ERROR    | Terraform fmt output:"
     echo -e "$output"
     pr_comment="$all_files_diff"
