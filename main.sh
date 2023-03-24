@@ -106,7 +106,7 @@ fi
 recursive=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
     exit_code=1
-    echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"cecursive\". Valid values are \"true\" or \"false\"."
+    echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"recursive\". Valid values are \"true\" or \"false\"."
     pr_comment="Unsupported command \"$INPUT_RECURSIVE\" for input \`recursive\` input. 
 Valid values are \"true\" or \"false\"."
     PULL_REQUEST_COMMENT "$pr_comment"
