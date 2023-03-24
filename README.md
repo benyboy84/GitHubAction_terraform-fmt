@@ -48,6 +48,19 @@ A comment will be added to the pull request in case of error. If it is related t
     recursive: false
   ```
 
+* `comment`
+
+  Whether or not to comment on GitHub pull requests.
+
+  - Type: boolean
+  - Optional
+  - Default: false
+
+  ```yaml
+  with:
+    comment: true
+  ```
+
 ## Environment Variables
 
 * `GITHUB_TOKEN`
@@ -101,6 +114,7 @@ jobs:
         with:
           target: ./modules
           recursive: false
+          comment: true
 ```
 
 ## Screenshots

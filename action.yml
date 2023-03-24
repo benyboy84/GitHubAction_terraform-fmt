@@ -4,13 +4,18 @@ author: 'Benoit Blais'
 
 inputs:
   target:
-    description: Target to the terraform configuration.
+    description: 'Target to the terraform configuration.'
     required: false
     type: string
   recursive:
     description: 'By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the target argument, then fmt will scan that file or that directory instead.'
     required: false
     default: true
+    type: boolean
+  comment:
+    description: 'Whether or not to comment on GitHub pull requests. Defaults to `false`.'
+    required: false
+    default: false
     type: boolean
 
 runs:
@@ -22,4 +27,5 @@ runs:
       env:
         INPUT_TARGET: ${{ inputs.target }}
         INPUT_RECURSIVE: ${{ inputs.recursive }}
+        INPUT_COMMENT: ${{ inputs.comment }}
         
