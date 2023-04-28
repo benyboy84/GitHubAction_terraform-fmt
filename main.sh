@@ -112,7 +112,7 @@ $this_file_diff"
 fi
 
 
-if [[ $INPUT_COMMENT == true ]]: then
+if [[ $INPUT_COMMENT == true ]]; then
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
     if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
         echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
