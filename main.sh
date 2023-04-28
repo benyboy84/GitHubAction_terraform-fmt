@@ -13,67 +13,13 @@ IS_ARRAY()
     return 1
 }
 
-# `PULL_REQUEST_COMMENT` function will create a comment if the action is call from a pull request.
-# If a comment already exist in the pull request, it will delete it and create a new one.
-# If there `exit_code` variable is set to 0, meaning that there is no error, if a comment exist, it will be deleted.
-# @param: pull request comment
-#    Follow this guide to build the string for the body of the pull request comment:
-#    https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheets
-PULL_REQUEST_COMMENT () {
-    #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
-    if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
-        echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
-    else
-        if [[ -z GITHUB_TOKEN ]]; then
-            echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
-        else
-            # Look for an existing pull request comment and delete
-            echo "INFO     | Looking for an existing pull request comment."
-            local accept_header="Accept: application/vnd.github.v3+json"
-            local auth_header="Authorization: token $GITHUB_TOKEN"
-            local content_header="Content-Type: application/json"
-            if [[ "$GITHUB_EVENT_NAME" == "issue_comment" ]]; then
-                local pr_comments_url=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
-            else
-                local pr_comments_url=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
-            fi
-            local pr_comment_uri=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
-            local pr_comment_id=$(curl -sS -H "$auth_header" -H "$accept_header" -L "$pr_comments_url" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
-            if [ "$pr_comment_id" ]; then
-                if [[ $(IS_ARRAY $pr_comment_id)  -ne 0 ]]; then
-                    echo "INFO     | Found existing pull request comment: $pr_comment_id. Deleting."
-                    local pr_comment_url="$pr_comment_uri/$pr_comment_id"
-                    {
-                        curl -sS -X DELETE -H "$auth_header" -H "$accept_header" -L "$pr_comment_url" > /dev/null
-                    } ||
-                    {
-                        echo "ERROR    | Unable to delete existing comment in pull request."
-                    }
-                else
-                    echo "WARNING  | Pull request contain many comments with \"### Terraform Format\" in the body."
-                    echo "WARNING  | Existing pull request comments won't be delete."
-                fi
-            else
-                echo "INFO     | No existing pull request comment found."
-            fi
-            if [[ $exit_code -ne 0 ]]; then
-                # Add comment to pull request.
-                local body="### Terraform Format Failed
-$1"
-                local pr_payload=$(echo '{}' | jq --arg body "$body" '.body = $body')
-                echo "INFO     | Adding comment to pull request."
-                {
-                    curl -sS -X POST -H "$auth_header" -H "$accept_header" -H "$content_header" -d "$pr_payload" -L "$pr_comments_url" > /dev/null
-                } ||
-                {
-                    echo "ERROR    | Unable to add comment to pull request."
-                }
-            fi
-        fi
-    fi
-}
-
 # Optional inputs
+
+# Validate input comment.
+if [[ ! "$INPUT_COMMENT" =~ ^(true|false)$ ]]; then
+    echo "ERROR    | Unsupported command \"$INPUT_COMMENT\" for input \"comment\". Valid values are \"true\" or \"false\"."
+    exit 1
+fi
 
 # Validate input target.
 target=""
@@ -83,22 +29,15 @@ if [[ -n "$INPUT_TARGET" ]]; then
     else
         exit_code=1
         echo "ERROR    | Target does not exist: \"$INPUT_TARGET\"."
-        pr_comment="Provided value \"$INPUT_TARGET\" for \`target\` input does not exist. 
-You need to provide an existing file or directory."
-        PULL_REQUEST_COMMENT "$pr_comment"
-        exit $exit_code
+        exit 1
     fi
 fi
 
 # Validate input recursive.
 recursive=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
-    exit_code=1
-    echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"Recursive\". Valid values are \"true\" or \"false\"."
-    pr_comment="Unsupported command \"$INPUT_RECURSIVE\" for input \`recursive\` input. 
-Valid values are \"true\" or \"false\"."
-        PULL_REQUEST_COMMENT "$pr_comment"
-        exit $exit_code
+    echo "ERROR    | Unsupported command \"$INPUT_RECURSIVE\" for input \"recursive\". Valid values are \"true\" or \"false\"."
+    exit 1
 fi
 if [[ "$INPUT_RECURSIVE" == true ]]; then
     recursive="-recursive"
@@ -107,23 +46,8 @@ fi
 # Detect terraform version
 version=$(terraform version -json | jq -r '.terraform_version' 2>/dev/null || terraform version | grep 'Terraform v' | sed 's/Terraform v//')
 if [[ -z $version  ]]; then
-    exit_code=1
     echo "ERROR    | Terraform not detected."
-    pr_comment="<details><summary>Show Output</summary>
-<p>
-This GitHub Actions does not install \`terraform\`, so you have to install them in advanced.
-
-\`\`\`yaml
-- name: Setup Terraform
-uses: hashicorp/setup-terraform@v2
-with:
-    terraform_wrapper: false
-\`\`\`
-
-</p>
-</details>"
-        PULL_REQUEST_COMMENT "$pr_comment"
-        exit $exit_code
+    exit 1
 else
     echo "INFO     | Using terraform version $version."
 fi
@@ -187,6 +111,59 @@ $this_file_diff"
     pr_comment="$all_files_diff"
 fi
 
-PULL_REQUEST_COMMENT "$pr_comment"
+
+if [[ $INPUT_COMMENT == true ]]; then
+    #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
+    if [[ "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" ]]; then
+        echo "WARNING  | $GITHUB_EVENT_NAME event does not relate to a pull request."
+    else
+        if [[ -z GITHUB_TOKEN ]]; then
+            echo "WARNING  | GITHUB_TOKEN not defined. Pull request comment is not possible without a GitHub token."
+        else
+            # Look for an existing pull request comment and delete
+            echo "INFO     | Looking for an existing pull request comment."
+            accept_header="Accept: application/vnd.github.v3+json"
+            auth_header="Authorization: token $GITHUB_TOKEN"
+            content_header="Content-Type: application/json"
+            if [[ "$GITHUB_EVENT_NAME" == "issue_comment" ]]; then
+                pr_comments_url=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
+            else
+                pr_comments_url=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
+            fi
+            pr_comment_uri=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
+            pr_comment_id=$(curl -sS -H "$auth_header" -H "$accept_header" -L "$pr_comments_url" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
+            if [ "$pr_comment_id" ]; then
+                if [[ $(IS_ARRAY $pr_comment_id)  -ne 0 ]]; then
+                    echo "INFO     | Found existing pull request comment: $pr_comment_id. Deleting."
+                    pr_comment_url="$pr_comment_uri/$pr_comment_id"
+                    {
+                        curl -sS -X DELETE -H "$auth_header" -H "$accept_header" -L "$pr_comment_url" > /dev/null
+                    } ||
+                    {
+                        echo "ERROR    | Unable to delete existing comment in pull request."
+                    }
+                else
+                    echo "WARNING  | Pull request contain many comments with \"### Terraform Format\" in the body."
+                    echo "WARNING  | Existing pull request comments won't be delete."
+                fi
+            else
+                echo "INFO     | No existing pull request comment found."
+            fi
+            if [[ $exit_code -ne 0 ]]; then
+                # Add comment to pull request.
+                body="### Terraform Format Failed
+$pr_comment"
+                pr_payload=$(echo '{}' | jq --arg body "$body" '.body = $body')
+                echo "INFO     | Adding comment to pull request."
+                {
+                    curl -sS -X POST -H "$auth_header" -H "$accept_header" -H "$content_header" -d "$pr_payload" -L "$pr_comments_url" > /dev/null
+                } ||
+                {
+                    echo "ERROR    | Unable to add comment to pull request."
+                }
+            fi
+        fi
+    fi
+fi
 
 exit $exit_code
