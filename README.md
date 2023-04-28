@@ -7,7 +7,7 @@ This can be used to check that files are properly formatted before merging.
 
 If any files are not correctly formatted, the GitHub Action job failed.
 
-A comment will be added to the pull request in case of error. If it is related to the `terraform fmt` command, the comment will contain the output of the command.
+A comment can be added to the pull request in case of error related to the `terraform fmt` command.
 
 ## Requirements
 
