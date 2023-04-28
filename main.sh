@@ -122,20 +122,20 @@ if [[ $INPUT_COMMENT == true ]]; then
         else
             # Look for an existing pull request comment and delete
             echo "INFO     | Looking for an existing pull request comment."
-            local accept_header="Accept: application/vnd.github.v3+json"
-            local auth_header="Authorization: token $GITHUB_TOKEN"
-            local content_header="Content-Type: application/json"
+            accept_header="Accept: application/vnd.github.v3+json"
+            auth_header="Authorization: token $GITHUB_TOKEN"
+            content_header="Content-Type: application/json"
             if [[ "$GITHUB_EVENT_NAME" == "issue_comment" ]]; then
-                local pr_comments_url=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
+                pr_comments_url=$(jq -r ".issue.comments_url" "$GITHUB_EVENT_PATH")
             else
-                local pr_comments_url=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
+                pr_comments_url=$(jq -r ".pull_request.comments_url" "$GITHUB_EVENT_PATH")
             fi
-            local pr_comment_uri=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
-            local pr_comment_id=$(curl -sS -H "$auth_header" -H "$accept_header" -L "$pr_comments_url" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
+            pr_comment_uri=$(jq -r ".repository.issue_comment_url" "$GITHUB_EVENT_PATH" | sed "s|{/number}||g")
+            pr_comment_id=$(curl -sS -H "$auth_header" -H "$accept_header" -L "$pr_comments_url" | jq '.[] | select(.body|test ("### Terraform Format")) | .id')
             if [ "$pr_comment_id" ]; then
                 if [[ $(IS_ARRAY $pr_comment_id)  -ne 0 ]]; then
                     echo "INFO     | Found existing pull request comment: $pr_comment_id. Deleting."
-                    local pr_comment_url="$pr_comment_uri/$pr_comment_id"
+                    pr_comment_url="$pr_comment_uri/$pr_comment_id"
                     {
                         curl -sS -X DELETE -H "$auth_header" -H "$accept_header" -L "$pr_comment_url" > /dev/null
                     } ||
@@ -151,9 +151,9 @@ if [[ $INPUT_COMMENT == true ]]; then
             fi
             if [[ $exit_code -ne 0 ]]; then
                 # Add comment to pull request.
-                local body="### Terraform Format Failed
+                body="### Terraform Format Failed
 $pr_comment"
-                local pr_payload=$(echo '{}' | jq --arg body "$body" '.body = $body')
+                pr_payload=$(echo '{}' | jq --arg body "$body" '.body = $body')
                 echo "INFO     | Adding comment to pull request."
                 {
                     curl -sS -X POST -H "$auth_header" -H "$accept_header" -H "$content_header" -d "$pr_payload" -L "$pr_comments_url" > /dev/null
