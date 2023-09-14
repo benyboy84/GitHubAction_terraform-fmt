@@ -35,6 +35,14 @@ A comment can be added to the pull request in case of error related to the `terr
     target: ./modules
   ```
 
+* `check`
+    
+  By default, fmt checks if the input is properly formatted. If you set it to false, code will be formated in a canonical format.
+
+  - Type: boolean
+  - Optional
+  - Default: true
+
 * `recursive`
 
   Process files in subdirectories. By default, all subdirectories are process.
