@@ -130,19 +130,18 @@ $this_file_diff"
             pr_comment="### Terraform Format Succeeded
 The following files have been formatted, make sure to perform a 'git pull' to update your local repository.
 $all_files_diff"
-            elif [[ $format_exit_code -eq 1 || $format_exit_code -eq 2 ]]; then
-                if [[ $format_exit_code -eq 2 ]]; then
-                    echo "ERROR    | Failed to parse terraform file(s)."
-                else
-                    echo "ERROR    | Malformed terraform CLI command."
-                fi
-                pr_comment="### Terraform Format Failed
+        elif [[ $format_exit_code -eq 1 || $format_exit_code -eq 2 ]]; then
+            if [[ $format_exit_code -eq 2 ]]; then
+                echo "ERROR    | Failed to parse terraform file(s)."
+            else
+                echo "ERROR    | Malformed terraform CLI command."
+            fi
+            pr_comment="### Terraform Format Failed
 <details><summary>Show Output</summary>
 <p>
 $format_output
 </p>
 </details>"
-            fi
         fi
     else
         pr_comment="### Terraform Format Failed

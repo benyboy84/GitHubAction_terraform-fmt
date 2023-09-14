@@ -42,7 +42,7 @@ A comment can be added to the pull request in case of error related to the `terr
   - Type: boolean
   - Optional
   - Default: true
-
+ 
 * `recursive`
 
   Process files in subdirectories. By default, all subdirectories are process.
