@@ -7,13 +7,18 @@ inputs:
     description: 'Target to the terraform configuration.'
     required: false
     type: string
+  check:
+    description: 'By default, fmt checks if the input is properly formatted. If you set it to false, code will be formated in a canonical format.'
+    required: false
+    default: true
+    type: bool
   recursive:
     description: 'By default, fmt scans the current directory for configuration files. If you provide a file or a directory for the target argument, then fmt will scan that file or that directory instead.'
     required: false
     default: true
     type: boolean
   comment:
-    description: 'Whether or not to comment on GitHub pull requests. Defaults to `false`.'
+    description: 'Whether or not to comment on GitHub pull requests.'
     required: false
     default: false
     type: boolean
@@ -34,6 +39,7 @@ runs:
       run: bash ${{ github.action_path }}/main.sh
       env:
         INPUT_TARGET: ${{ inputs.target }}
+        INPUT_CHECK: ${{ inputs.check }}
         INPUT_RECURSIVE: ${{ inputs.recursive }}
         INPUT_COMMENT: ${{ inputs.comment }}
         

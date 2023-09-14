@@ -33,6 +33,12 @@ if [[ -n "$INPUT_TARGET" ]]; then
     fi
 fi
 
+# Validate input check.
+if [[ ! "$INPUT_CHECK" =~ ^(true|false)$ ]]; then
+    echo "ERROR    | Unsupported command \"$INPUT_CHECK\" for input \"check\". Valid values are \"true\" or \"false\"."
+    exit 1
+fi
+
 # Validate input recursive.
 recursive=""
 if [[ ! "$INPUT_RECURSIVE" =~ ^(true|false)$ ]]; then
@@ -78,7 +84,8 @@ if [[ $exit_code -eq 1 || $exit_code -eq 2 ]]; then
     # Add output of `terraform fmt` command.
     echo -e "ERROR    | Terraform fmt output:"
     echo -e $output
-    pr_comment="<details><summary>Show Output</summary>
+    pr_comment="### Terraform Format Failed
+<details><summary>Show Output</summary>
 <p>
 $output
 </p>
@@ -109,12 +116,39 @@ $this_file_diff
 
 $this_file_diff"
     done
-    # Add output of `terraform fmt` command.
-    echo -e "ERROR    | Terraform fmt output:"
-    echo -e "$output"
-    pr_comment="$all_files_diff"
-fi
 
+    if [[ $INPUT_CHECK == false ]]; then
+        # Add output of `terraform fmt` command.
+        echo -e "WARNING  | Terraform fmt output:"
+        echo -e "$output"
+        echo "INFO     | Terraform file(s) are being formatted."
+        # Gather the output of `terraform fmt`.
+        format_output=$(terraform fmt ${recursive} ${target} -write=true)
+        format_exit_code=${?}
+        if [[ $format_exit_code -eq 0 ]]; then
+            echo "INFO     | Terraform Format Succeeded."
+            pr_comment="### Terraform Format Succeeded
+The following files have been formatted, make sure to perform a 'git pull' to update your local repository.
+$all_files_diff"
+            elif [[ $format_exit_code -eq 1 || $format_exit_code -eq 2 ]]; then
+                if [[ $format_exit_code -eq 2 -eq 2 ]]; then
+                    echo "ERROR    | Failed to parse terraform file(s)."
+                else
+                    echo "ERROR    | Malformed terraform CLI command."
+                fi
+                pr_comment="### Terraform Format Failed
+<details><summary>Show Output</summary>
+<p>
+$format_output
+</p>
+</details>"
+            fi
+        fi
+    else
+        pr_comment="### Terraform Format Failed
+$all_files_diff"
+    fi
+fi
 
 if [[ $INPUT_COMMENT == true ]]; then
     #if [[ "$GITHUB_EVENT_NAME" != "push" && "$GITHUB_EVENT_NAME" != "pull_request" && "$GITHUB_EVENT_NAME" != "issue_comment" && "$GITHUB_EVENT_NAME" != "pull_request_review_comment" && "$GITHUB_EVENT_NAME" != "pull_request_target" && "$GITHUB_EVENT_NAME" != "pull_request_review" ]]; then
@@ -155,8 +189,7 @@ if [[ $INPUT_COMMENT == true ]]; then
             fi
             if [[ $exit_code -ne 0 ]]; then
                 # Add comment to pull request.
-                body="### Terraform Format Failed
-$pr_comment"
+                body="$pr_comment"
                 pr_payload=$(echo '{}' | jq --arg body "$body" '.body = $body')
                 echo "INFO     | Adding comment to pull request."
                 {
@@ -170,4 +203,13 @@ $pr_comment"
     fi
 fi
 
-exit $exit_code
+# Exit with the result based on the `check`property
+if [[ $INPUT_CHECK == true ]]; then
+    exit $exit_code
+else
+    if [[ $exit_code -eq 3 ]]; then
+        echo $format_exit_code
+    else 
+        exit $exit_code
+    fi
+fi
