@@ -21,10 +21,10 @@ inputs:
 output:
   exitcode:
     description: 'The exit code of the Terraform fmt command.'
-    value: ${{ steps.bashscript.outputs.exitcode }}
+    value: ${{ steps.BashScript.Outputs.exitcode }}
   output:
     description: 'The Terraform fmt output.' 
-    value: ${{ steps.bashscript.outputs.output }}
+    value: ${{ steps.BashScript.Outputs.output }}
 
 runs:
   using: "composite"
