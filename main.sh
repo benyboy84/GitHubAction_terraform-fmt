@@ -207,7 +207,7 @@ if [[ $INPUT_CHECK == true ]]; then
     exit $exit_code
 else
     if [[ $exit_code -eq 3 ]]; then
-        echo $format_exit_code
+        exit $format_exit_code
     else 
         exit $exit_code
     fi
