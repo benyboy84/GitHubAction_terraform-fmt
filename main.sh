@@ -56,6 +56,10 @@ fi
 output=$(terraform fmt -list=false -check ${recursive} ${target})
 exit_code=${?}
 
+# Output informations for future use.
+echo "exitcode=$exit_code" >> $GITHUB_OUTPUT
+echo "output=$output" >> $GITHUB_OUTPUT
+
 # Exit Code: 0
 # Meaning: All files formatted correctly.
 if [[ $exit_code -eq 0 ]]; then

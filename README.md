@@ -61,6 +61,16 @@ A comment can be added to the pull request in case of error related to the `terr
     comment: true
   ```
 
+## Outputs
+
+* `exitcode`
+
+  The exit code of the Terraform fmt command. 
+
+* `output`
+
+  The Terraform fmt output. 
+
 ## Environment Variables
 
 * `GITHUB_TOKEN`

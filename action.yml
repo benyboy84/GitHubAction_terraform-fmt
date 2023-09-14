@@ -18,10 +18,18 @@ inputs:
     default: false
     type: boolean
 
+output:
+  exitcode:
+    description: 'The exit code of the Terraform fmt command.'
+    value: ${{ steps.bashscript.outputs.exitcode }}
+  output:
+    description: 'The Terraform fmt output.' 
+    value: ${{ steps.bashscript.outputs.output }}
+
 runs:
   using: "composite"
   steps:
-    - id: BashScript
+    - id: bashscript
       shell: bash
       run: bash ${{ github.action_path }}/main.sh
       env:
