@@ -18,7 +18,7 @@ inputs:
     default: false
     type: boolean
 
-output:
+outputs:
   exitcode:
     description: 'The exit code of the Terraform fmt command.'
     value: ${{ steps.BashScript.Outputs.exitcode }}
